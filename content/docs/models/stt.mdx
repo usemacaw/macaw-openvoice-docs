@@ -1,0 +1,73 @@
+---
+title: STT Models
+---
+
+# Speech-to-Text (STT) Models
+
+Macaw supports a growing catalog of speech-to-text models spanning multiple architectures — from encoder-decoder models like Whisper to CTC-based streaming models like NeMo Parakeet and LLM-based ASR systems. All models integrate through Macaw's unified engine interface with automatic pipeline adaptation based on the model's architecture.
+
+## Models
+
+| Status | Model | Parameters | WER (%) | RTFx | Streaming | Languages | Hardware | License | HuggingFace |
+|:---:|-------|-----------|---------|------|-----------|-----------|----------|---------|:---:|
+| Available | faster-whisper-large-v3 | 1.55B | 7.4 | — | Yes (chunked) | 100+ | GPU recommended | MIT | [Link](https://huggingface.co/Systran/faster-whisper-large-v3) |
+| Available | faster-whisper-medium | 769M | — | — | Yes (chunked) | 100+ | GPU recommended | MIT | [Link](https://huggingface.co/Systran/faster-whisper-medium) |
+| Available | faster-whisper-small | 244M | — | — | Yes (chunked) | 100+ | CPU / GPU | MIT | [Link](https://huggingface.co/Systran/faster-whisper-small) |
+| Available | faster-whisper-tiny | 39M | — | — | Yes (chunked) | 100+ | CPU / GPU | MIT | [Link](https://huggingface.co/Systran/faster-whisper-tiny) |
+| Available | distil-whisper-large-v3 | 756M | ~7.5 | 6x large-v3 | Yes (chunked) | English | GPU recommended | MIT | [Link](https://huggingface.co/Systran/faster-distil-whisper-large-v3) |
+| Available | WeNet | — | — | — | Yes (native) | Chinese focus | CPU / GPU | Apache-2.0 | — |
+| Planned | Canary-Qwen-2.5B | 2.5B | 5.63 | 418x | — | English | GPU | CC-BY-4.0 | [Link](https://huggingface.co/nvidia/canary-qwen-2.5b) |
+| Planned | Parakeet-TDT-1.1B | 1.1B | ~8.0 | >2,000x | Yes (native) | English | GPU ~4 GB | CC-BY-4.0 | [Link](https://huggingface.co/nvidia/parakeet-tdt-1.1b) |
+| Planned | Whisper Large V3 Turbo | 809M | 7.75 | 216x | No | 99+ | GPU ~6 GB | MIT | [Link](https://huggingface.co/openai/whisper-large-v3-turbo) |
+| Planned | Voxtral-Mini-4B | 4B | — | — | Yes (native) | 13 | GPU ≥16 GB | Apache-2.0 | [Link](https://huggingface.co/mistralai/Voxtral-Mini-4B-Realtime-2602) |
+| Planned | Qwen3-ASR-0.6B | 0.6B | — | — | Yes (unified) | 30+ | GPU recommended | Apache-2.0 | [Link](https://huggingface.co/Qwen/Qwen3-ASR-0.6B) |
+| Planned | Qwen3-ASR-1.7B | 1.7B | — | — | Yes (unified) | 30+ | GPU recommended | Apache-2.0 | [Link](https://huggingface.co/Qwen/Qwen3-ASR-1.7B) |
+| Planned | Moonshine Streaming Medium | 245M | 6.65 | — | Yes (native) | English | CPU / GPU | MIT | [Link](https://huggingface.co/usefulsensors/moonshine-streaming-medium) |
+| Planned | Granite Speech 3.3 8B | ~9B | 5.85 | — | No | English + multi-lang AST | GPU (high VRAM) | Apache-2.0 | [Link](https://huggingface.co/ibm-granite/granite-speech-3.3-8b) |
+| Planned | kyutai/stt-2.6b-en | 2.6B | — | — | — | English | GPU | — | [Link](https://huggingface.co/kyutai/stt-2.6b-en) |
+| Planned | SenseVoice Small | 234M | — | — | No | 50+ | CPU / GPU | Custom | [Link](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) |
+| Planned | distil-large-v3.5 | 756M | 7.10 | 1.5x Turbo | — | English | GPU recommended | MIT | [Link](https://huggingface.co/distil-whisper/distil-large-v3.5) |
+| Planned | stt_pt_fastconformer | — | — | — | — | Portuguese | GPU recommended | CC-BY-4.0 | [Link](https://huggingface.co/nvidia/stt_pt_fastconformer_hybrid_large_pc) |
+| Planned | Canary-1B-Flash | 883M | 1.48 ^1^ | — | — | 4 (en, de, fr, es) | GPU | CC-BY-4.0 | [Link](https://huggingface.co/nvidia/canary-1b-flash) |
+| Planned | Canary-180M-Flash | 182M | — | — | — | 4 (en, de, fr, es) | CPU / GPU | CC-BY-4.0 | [Link](https://huggingface.co/nvidia/canary-180m-flash) |
+| Planned | omniASR-LLM-7B | 7B + 1.2B | — | — | No | 1,600+ | GPU (high VRAM) | Apache-2.0 | [Link](https://huggingface.co/facebook/omniASR-LLM-7B) |
+| Planned | Phi-4-multimodal-instruct | 5.6B | 6.14 | — | No | 8 (en, zh, de, fr, it, ja, es, pt) | GPU (high VRAM) | MIT | [Link](https://huggingface.co/microsoft/Phi-4-multimodal-instruct) |
+| Planned | whisper-large-v3 | 1.55B | — | — | No | 100+ | GPU recommended | MIT | [Link](https://huggingface.co/openai/whisper-large-v3) |
+| Planned | whisper-large-v2 | 1.55B | — | — | No | 100+ | GPU recommended | MIT | [Link](https://huggingface.co/openai/whisper-large-v2) |
+| Planned | whisper-large | 1.55B | — | — | No | 100+ | GPU recommended | MIT | [Link](https://huggingface.co/openai/whisper-large) |
+| Planned | whisper-medium | 769M | — | — | No | 100+ | GPU recommended | MIT | [Link](https://huggingface.co/openai/whisper-medium) |
+| Planned | whisper-small | 244M | — | — | No | 100+ | CPU / GPU | MIT | [Link](https://huggingface.co/openai/whisper-small) |
+| Planned | whisper-tiny | 39M | — | — | No | 100+ | CPU / GPU | MIT | [Link](https://huggingface.co/openai/whisper-tiny) |
+| Planned | whisper-base | 74M | — | — | No | 100+ | CPU / GPU | MIT | [Link](https://huggingface.co/openai/whisper-base) |
+| Planned | whisper-medium.en | 769M | — | — | No | English | GPU recommended | MIT | [Link](https://huggingface.co/openai/whisper-medium.en) |
+| Planned | whisper-small.en | 244M | — | — | No | English | CPU / GPU | MIT | [Link](https://huggingface.co/openai/whisper-small.en) |
+| Planned | whisper-tiny.en | 39M | — | — | No | English | CPU / GPU | MIT | [Link](https://huggingface.co/openai/whisper-tiny.en) |
+| Planned | whisper-base.en | 74M | — | — | No | English | CPU / GPU | MIT | [Link](https://huggingface.co/openai/whisper-base.en) |
+
+
+<Callout type="info" title="Choosing a model">
+
+**Best accuracy (English):**
+- **Canary-Qwen-2.5B** — 5.63% WER, state-of-the-art on Open ASR benchmarks
+- **Granite Speech 3.3 8B** — 5.85% WER, also supports multilingual audio-to-text translation
+- **Phi-4-multimodal-instruct** — 6.14% WER, multimodal LLM with audio understanding (MIT)
+
+**Best multilingual:**
+- **faster-whisper-large-v3** — 100+ languages with auto-detection (available now)
+- **Qwen3-ASR-1.7B** — 30+ languages with unified streaming/offline inference
+
+**Best speed:**
+- **Parakeet-TDT-1.1B** — RTFx >2,000x, among the fastest open models
+- **Whisper Large V3 Turbo** — 6x faster than large-v3 with only ~0.35% WER gap
+
+**Best for edge/low-resource:**
+- **faster-whisper-tiny** — 39M params, runs on CPU (available now)
+- **Canary-180M-Flash** — 180M params, designed for resource-constrained deployment
+- **Moonshine Streaming Medium** — Designed for on-device streaming ASR
+
+**Real-time streaming:**
+- **Voxtral-Mini-4B** — Native streaming with &lt;500ms latency (requires vLLM)
+- **WeNet** — Frame-by-frame native partials with hot word support (available now)
+
+</Callout>
+

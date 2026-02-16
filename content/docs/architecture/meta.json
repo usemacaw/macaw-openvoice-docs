@@ -1,0 +1,4 @@
+{
+  "title": "Architecture",
+  "pages": ["overview", "session-manager", "vad-pipeline", "scheduling"]
+}

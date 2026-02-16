@@ -1,0 +1,5 @@
+{
+  "title": "API Reference",
+  "root": true,
+  "pages": ["rest-api", "websocket-protocol", "grpc-internal"]
+}

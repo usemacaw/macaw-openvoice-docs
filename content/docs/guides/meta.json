@@ -1,0 +1,10 @@
+{
+  "title": "Guides",
+  "pages": [
+    "batch-transcription",
+    "streaming-stt",
+    "full-duplex",
+    "adding-engine",
+    "cli"
+  ]
+}

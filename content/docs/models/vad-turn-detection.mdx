@@ -1,0 +1,29 @@
+---
+title: VAD & Turn Detection Models
+---
+
+# VAD & Turn Detection Models
+
+Voice Activity Detection (VAD) and turn detection are critical components in any real-time voice pipeline. VAD determines **when someone is speaking**, while semantic turn detection determines **when someone has finished their thought** — a much harder problem that requires understanding conversational context.
+
+Macaw uses VAD internally to segment audio before sending it to STT engines. Turn detection can be layered on top to enable natural conversational AI experiences.
+
+## Models
+
+| Status | Model | Type | Latency | Parameters | Hardware | License | HuggingFace |
+|:---:|-------|------|---------|-----------|----------|---------|:---:|
+| Available | Silero VAD | Energy + Neural VAD | ~2 ms/frame | ~2M | CPU | MIT | [Link](https://github.com/snakers4/silero-vad) |
+| Planned | smart-turn-v2 | Semantic End-of-Turn | ~12 ms (L40S) | 94.8M | CPU / GPU | BSD-2-Clause | [Link](https://huggingface.co/pipecat-ai/smart-turn-v2) |
+| Planned | parakeet-realtime-eou-120m | End-of-Utterance | — | 120M | GPU | CC-BY-4.0 | [Link](https://huggingface.co/nvidia/parakeet_realtime_eou_120m-v1) |
+| Planned | FireRedChat-pVAD | Speaker-aware VAD | — | — | CPU / GPU | Apache-2.0 | [Link](https://huggingface.co/FireRedTeam/FireRedChat-pvad) |
+
+
+<Callout type="info" title="Choosing a model">
+
+- **Default VAD**: Silero VAD is already integrated and handles voice activity detection for all STT engines. No additional setup needed.
+- **Conversational AI**: Add **smart-turn-v2** for semantic end-of-turn detection — it understands when a user has finished speaking, not just when they paused. Supports 14 languages.
+- **Low-latency streaming**: **parakeet-realtime-eou-120m** is designed for NVIDIA NeMo pipelines with real-time end-of-utterance detection.
+
+</Callout>
+
+

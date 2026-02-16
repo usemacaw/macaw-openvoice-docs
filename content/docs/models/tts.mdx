@@ -1,0 +1,57 @@
+---
+title: TTS Models
+---
+
+# Text-to-Speech (TTS) Models
+
+Macaw supports a diverse set of TTS models ranging from ultra-lightweight (82M parameters) to large LLM-based systems. Models vary in synthesis quality, latency, voice control, and language support. All integrate through Macaw's unified engine interface with consistent audio output handling.
+
+## Models
+
+| Status | Model | Parameters | Latency | Streaming | Languages | Hardware | License | HuggingFace |
+|:---:|-------|-----------|---------|-----------|-----------|----------|---------|:---:|
+| Available | Kokoro-82M | 82M | — | — | 9 | CPU / GPU | Apache-2.0 | [Link](https://huggingface.co/hexgrad/Kokoro-82M) |
+| Planned | Qwen3-TTS-12Hz-0.6B | 0.6B | ~97 ms E2E | Yes | 10 (zh, en, ja, ko, de, fr, ru, pt, es, it) | GPU recommended | Apache-2.0 | [Link](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-Base) |
+| Planned | Pocket-TTS | 100M | ~200 ms | Yes | English | CPU (2 cores) | CC-BY-4.0 | [Link](https://huggingface.co/kyutai/pocket-tts) |
+| Planned | NeuTTS-Air | 748M | ~100-200 ms | Yes | 4 (en, es, de, fr) | CPU / GPU | Apache-2.0 | [Link](https://huggingface.co/neuphonic/neutts-air) |
+| Planned | Orpheus-3B | 4B | ~100-200 ms | Yes | English (+ multilingual) | GPU | Apache-2.0 | [Link](https://huggingface.co/canopylabs/orpheus-3b-0.1-ft) |
+| Planned | CosyVoice 3 | 0.5B | ~150 ms | Yes | 9 (zh, en, ja, ko, de, es, fr, it, ru) | GPU recommended | Apache-2.0 | [Link](https://huggingface.co/FunAudioLLM/Fun-CosyVoice3-0.5B-2512) |
+| Planned | Chatterbox Turbo | 350M | sub-200 ms | No | 23 | GPU | MIT | [Link](https://huggingface.co/ResembleAI/chatterbox-turbo) |
+| Planned | Kimi-Audio-7B | 7B | ~300 ms | Yes | zh, en | GPU (high VRAM) | MIT | [Link](https://huggingface.co/moonshotai/Kimi-Audio-7B-Instruct) |
+| Planned | VibeVoice-Realtime-0.5B | 0.5B | ~300 ms | Yes | English (+ 9 experimental) | GPU | MIT | [Link](https://huggingface.co/microsoft/VibeVoice-Realtime-0.5B) |
+| Planned | Dia2-2B | 2B | — | Yes | English | GPU | Apache-2.0 | [Link](https://huggingface.co/nari-labs/Dia2-2B) |
+| Planned | CSM-1B | ~1B | — | No | English | GPU | Apache-2.0 | [Link](https://huggingface.co/sesame/csm-1b) |
+| Planned | parler-tts-mini-multilingual | 0.9B | — | No | 8 (en, fr, es, pt, pl, de, it, nl) | GPU recommended | Apache-2.0 | [Link](https://huggingface.co/parler-tts/parler-tts-mini-multilingual-v1.1) |
+| Planned | MegaTTS3 | 0.45B | — | No | zh, en | GPU | Apache-2.0 | [Link](https://huggingface.co/ByteDance/MegaTTS3) |
+| Planned | OuteTTS-1.0-0.6B | 0.6B | — | No | 14 | GPU | Apache-2.0 | [Link](https://huggingface.co/OuteAI/OuteTTS-1.0-0.6B) |
+| Planned | Zonos-v0.1 | 1.6B | 200-300 ms | No | 5+ (en, ja, zh, fr, de + Indic) | GPU | Apache-2.0 | [Link](https://huggingface.co/Zyphra/Zonos-v0.1-transformer) |
+| Planned | Bark | 300M | — | No | 13 | GPU recommended | MIT | [Link](https://huggingface.co/suno/bark) |
+
+
+<Callout type="info" title="Choosing a model">
+
+**Lowest latency (streaming):**
+- **Qwen3-TTS-12Hz-0.6B** — ~97ms end-to-end latency with streaming generation. 10 languages.
+- **NeuTTS-Air** — ~100ms streaming on-device TTS with voice cloning. Runs on CPU.
+- **Orpheus-3B** — ~100-200ms streaming with emotion/prosody control.
+
+**Best for production today:**
+- **Kokoro-82M** — Ultra-lightweight at 82M params, runs on CPU. available now via `macaw pull`.
+- **Pocket-TTS** — 100M params, 6x real-time on CPU, ~200ms streaming latency.
+
+**Most languages:**
+- **Chatterbox Turbo** — 23 languages with voice cloning and sub-200ms latency.
+- **OuteTTS-1.0-0.6B** — 14 trained languages, Apache-2.0 licensed.
+- **Bark** — 13 languages with non-speech audio generation (music, sound effects).
+
+**High quality:**
+- **Kimi-Audio-7B** — Large LLM-based TTS from Moonshot AI with streaming at ~300ms.
+- **Zonos-v0.1** — 1.6B params, high expressiveness, trained on 200k+ hours.
+
+**Open-source ecosystem:**
+- **CosyVoice 3** — Alibaba's streaming multilingual TTS with ~150ms first-packet latency.
+- **Dia2-2B** — Nari Labs streaming dialogue TTS model.
+
+</Callout>
+
+

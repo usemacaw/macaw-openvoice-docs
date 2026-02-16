@@ -1,0 +1,121 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/* ──────────────────────────────────────────────────────────────
+   Macaw OpenVoice — Anthropic-Inspired Theme
+   Gold primary from the Macaw logo (#FDD614)
+   Light-default, clean, generous spacing
+   ────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Primary: warm gold */
+  --fd-primary: 48 96% 44%;
+
+  /* Backgrounds */
+  --fd-background: 40 33% 97%;
+  --fd-muted: 40 20% 94%;
+  --fd-card: 0 0% 100%;
+  --fd-popover: 0 0% 100%;
+  --fd-border: 40 10% 88%;
+
+  /* Foreground */
+  --fd-foreground: 230 30% 12%;
+  --fd-muted-foreground: 225 10% 45%;
+  --fd-card-foreground: 230 30% 12%;
+  --fd-popover-foreground: 230 30% 12%;
+
+  /* Typography */
+  --fd-font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --fd-font-mono: var(--font-mono), ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Sidebar active item */
+  --fd-sidebar-active: 48 96% 44%;
+
+  /* Runtime flow diagram */
+  --flow-gold: #b8860b;
+  --flow-gold-bg: rgba(184, 134, 11, 0.08);
+  --flow-blue: #2563eb;
+  --flow-blue-bg: rgba(37, 99, 235, 0.08);
+  --flow-green: #16a34a;
+  --flow-green-bg: rgba(22, 163, 74, 0.08);
+  --flow-purple: #7c3aed;
+  --flow-purple-bg: rgba(124, 58, 237, 0.08);
+  --flow-fg: #171a26;
+  --flow-muted: #9ca3af;
+  --flow-border: rgba(0, 0, 0, 0.12);
+  --flow-node-bg: #ffffff;
+}
+
+.dark {
+  /* Primary: brighter gold for dark mode */
+  --fd-primary: 48 98% 54%;
+
+  /* Backgrounds */
+  --fd-background: 230 30% 6%;
+  --fd-muted: 230 25% 10%;
+  --fd-card: 230 25% 8%;
+  --fd-popover: 230 25% 8%;
+  --fd-border: 230 15% 16%;
+
+  /* Foreground */
+  --fd-foreground: 40 25% 92%;
+  --fd-muted-foreground: 225 15% 60%;
+  --fd-card-foreground: 40 25% 92%;
+  --fd-popover-foreground: 40 25% 92%;
+
+  /* Runtime flow diagram — dark mode */
+  --flow-gold: #fbbf24;
+  --flow-gold-bg: rgba(251, 191, 36, 0.10);
+  --flow-blue: #60a5fa;
+  --flow-blue-bg: rgba(96, 165, 250, 0.10);
+  --flow-green: #4ade80;
+  --flow-green-bg: rgba(74, 222, 128, 0.10);
+  --flow-purple: #a78bfa;
+  --flow-purple-bg: rgba(167, 139, 250, 0.10);
+  --flow-fg: #efeadd;
+  --flow-muted: #6b7280;
+  --flow-border: rgba(255, 255, 255, 0.10);
+  --flow-node-bg: #1a1d2a;
+}
+
+/* ── Global typography ─────────────────────────────────────── */
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Headings ──────────────────────────────────────────────── */
+
+.prose h2,
+[data-mdx] h2 {
+  margin-top: 2.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid hsl(var(--fd-border));
+}
+
+/* ── Code blocks ───────────────────────────────────────────── */
+
+code:not(pre code) {
+  border: 1px solid hsl(var(--fd-border));
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+/* ── Tables ────────────────────────────────────────────────── */
+
+table {
+  display: table;
+  width: 100%;
+}
+
+table th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: hsl(var(--fd-muted-foreground));
+}

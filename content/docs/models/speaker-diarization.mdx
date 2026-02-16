@@ -1,0 +1,34 @@
+---
+title: Speaker Diarization Models
+---
+
+# Speaker Diarization Models
+
+Speaker diarization answers the question "**who spoke when?**" — segmenting audio into speaker-attributed regions. This is essential for meeting transcription, call center analytics, and any multi-speaker scenario. Related models include speaker verification (confirming identity) and language identification.
+
+## Models
+
+| Status | Model | Type | Parameters | Languages | Hardware | License | HuggingFace |
+|:---:|-------|------|-----------|-----------|----------|---------|:---:|
+| Planned | speaker-diarization-3.1 | Diarization Pipeline | — | Multilingual | GPU recommended | MIT | [Link](https://huggingface.co/pyannote/speaker-diarization-3.1) |
+| Planned | Sortformer 4spk-v2 | Streaming Diarization | — | English | GPU | CC-BY-4.0 | [Link](https://huggingface.co/nvidia/diar_streaming_sortformer_4spk-v2) |
+| Planned | TitaNet-Large | Speaker Embedding | ~23M | English | GPU | CC-BY-4.0 | [Link](https://huggingface.co/nvidia/speakerverification_en_titanet_large) |
+| Planned | lang-id-voxlingua107 | Language Identification | ~21M | 107 languages | CPU / GPU | Apache-2.0 | [Link](https://huggingface.co/speechbrain/lang-id-voxlingua107-ecapa) |
+
+
+<Callout type="info" title="Choosing a model">
+
+- **Full diarization pipeline**: **pyannote speaker-diarization-3.1** is the most widely adopted open-source diarization system. MIT-licensed but requires accepting access conditions on HuggingFace (gated model).
+- **NVIDIA NeMo ecosystem**: **Sortformer** uses a novel sort-based approach for up to 4 speakers. **TitaNet** provides speaker embeddings for verification and clustering.
+- **Language identification**: **lang-id-voxlingua107** identifies the spoken language from 107 options — useful for routing audio to the correct STT model.
+
+</Callout>
+
+
+
+<Callout type="warn" title="Gated model access">
+
+`pyannote/speaker-diarization-3.1` requires accepting user conditions on HuggingFace and sharing contact details to access model files. This may create friction in fully automated CI/CD pipelines or air-gapped environments.
+
+</Callout>
+

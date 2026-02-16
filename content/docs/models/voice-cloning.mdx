@@ -1,0 +1,36 @@
+---
+title: Voice Cloning Models
+---
+
+# Voice Cloning Models
+
+Voice cloning models generate speech that mimics a target speaker's voice characteristics from a short reference audio sample. These models enable personalized TTS experiences, custom voice creation, and speaker-adaptive synthesis. Some models require just 3-6 seconds of reference audio.
+
+
+<Callout type="warn" title="Consent and rights">
+
+Even when model weights are permissively licensed, voice cloning carries **consent and intellectual property risks**. Production deployments should implement consent verification, tenant isolation, and usage policies to prevent unauthorized voice replication.
+
+</Callout>
+
+
+## Models
+
+| Status | Model | Parameters | Reference Audio | Languages | Hardware | License | HuggingFace |
+|:---:|-------|-----------|----------------|-----------|----------|---------|:---:|
+| Planned | Qwen3-TTS-1.7B-CustomVoice | 1.7B | 3 seconds | 10 (zh, en, ja, ko, de, fr, ru, pt, es, it) | GPU recommended | Apache-2.0 | [Link](https://huggingface.co/Qwen/Qwen3-TTS-1.7B-CustomVoice) |
+| Planned | OpenVoice V2 | — | ~10 seconds | 6+ (en, es, fr, zh, ja, ko) | GPU recommended | MIT | [Link](https://huggingface.co/myshell-ai/OpenVoiceV2) |
+| Planned | Index-TTS | — | 5-10 seconds | zh, en | GPU | Apache-2.0 | [Link](https://huggingface.co/IndexTeam/Index-TTS) |
+| Planned | OpenF5-TTS | 336M | ~5 seconds | Multilingual | GPU | Apache-2.0 | [Link](https://huggingface.co/mrfakename/OpenF5-TTS-Base) |
+| Planned | CosyVoice 2 | 0.5B | 3-10 seconds | zh, en, ja, ko, yue | GPU recommended | Apache-2.0 | [Link](https://huggingface.co/FunAudioLLM/CosyVoice2-0.5B) |
+
+
+<Callout type="info" title="Choosing a model">
+
+- **Fastest cloning**: **Qwen3-TTS-1.7B-CustomVoice** needs only 3 seconds of reference audio and supports streaming generation with 10 languages.
+- **Open-source leader**: **OpenVoice V2** by MyShell is MIT-licensed and supports cross-lingual voice cloning with tone color control.
+- **Chinese focus**: **CosyVoice 2** from Alibaba (FunAudioLLM) offers high-quality multilingual synthesis with strong Chinese language support.
+- **Flow-matching TTS**: **F5-TTS** uses a flow-matching architecture for natural-sounding zero-shot voice cloning.
+
+</Callout>
+

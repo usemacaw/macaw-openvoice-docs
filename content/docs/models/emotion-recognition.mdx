@@ -1,0 +1,27 @@
+---
+title: Emotion Recognition Models
+---
+
+# Emotion Recognition Models
+
+Emotion recognition models detect the emotional state of a speaker from their voice. This enables empathetic conversational AI, call center sentiment analysis, and adaptive voice experiences that respond to user mood. Models range from simple categorical classification (happy, sad, angry) to dimensional emotion analysis (valence, arousal, dominance).
+
+## Models
+
+| Status | Model | Type | Parameters | Emotions | Hardware | License | HuggingFace |
+|:---:|-------|------|-----------|----------|----------|---------|:---:|
+| Planned | emotion-diarization-wavlm-large | Emotion Diarization | ~315M | Anger, Happiness, Sadness, Neutral | GPU recommended | Apache-2.0 | [Link](https://huggingface.co/speechbrain/emotion-diarization-wavlm-large) |
+| Planned | emotion-recognition-wav2vec2 | Emotion Classification | — | Angry, Happy, Sad, Neutral | CPU / GPU | Apache-2.0 | [Link](https://huggingface.co/speechbrain/emotion-recognition-wav2vec2-IEMOCAP) |
+| Planned | Audio2Emotion-v3.0 | Emotion Classification | — | Multiple (NVIDIA Riva) | GPU | — | [Link](https://huggingface.co/nvidia/Audio2Emotion-v3.0) |
+| Planned | OmniDimen-V1.2-4B-Emotion | Text Emotion Analysis | 4B | Dimensional (valence, arousal) | GPU | MIT | [Link](https://huggingface.co/OmniDimen/OmniDimen-V1.2-4B-Emotion) |
+
+
+<Callout type="info" title="Choosing a model">
+
+- **Emotion-aware diarization**: **emotion-diarization-wavlm-large** combines speaker diarization with emotion detection — it tells you not just who spoke, but how they felt.
+- **Simple emotion classification**: **wav2vec2 emotion recognition** provides straightforward categorical emotion labels per audio segment.
+- **NVIDIA ecosystem**: **Audio2Emotion-v3.0** integrates with NVIDIA Riva and Audio2Face pipelines for animated avatar experiences.
+- **Fine-grained analysis**: **OmniDimen-2-4B-Emotion** provides dimensional emotion analysis rather than discrete categories.
+
+</Callout>
+

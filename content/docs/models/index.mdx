@@ -1,0 +1,179 @@
+---
+title: Supported Models
+---
+
+# Supported Models
+
+Macaw OpenVoice is **engine-agnostic** — it supports multiple STT and TTS engines through a unified backend interface. Each engine runs as an isolated gRPC subprocess, and the runtime adapts its pipeline automatically based on the model's architecture.
+
+## Model Catalog
+
+Macaw tracks models across 8 categories. The status column shows integration progress:
+
+| Status | Meaning |
+|--------|---------|
+| **Available** | Integrated in Macaw, ready to use via `macaw pull` |
+| **Coming Soon** | Engine adapter in active development |
+| **Planned** | On the roadmap, not yet started |
+
+### Overview by Category
+
+| Category | Available | Planned | Total | Catalog |
+|----------|:---------:|:-------:|:-----:|---------|
+| [Speech-to-Text](/docs/models/stt) | 6 | 27 | 33 | [See all &rarr;](/docs/models/stt) |
+| [Text-to-Speech](/docs/models/tts) | 1 | 15 | 16 | [See all &rarr;](/docs/models/tts) |
+| [Voice Cloning](/docs/models/voice-cloning) | 0 | 5 | 5 | [See all &rarr;](/docs/models/voice-cloning) |
+| [VAD & Turn Detection](/docs/models/vad-turn-detection) | 1 | 3 | 4 | [See all &rarr;](/docs/models/vad-turn-detection) |
+| [Speaker Diarization](/docs/models/speaker-diarization) | 0 | 4 | 4 | [See all &rarr;](/docs/models/speaker-diarization) |
+| [Emotion Recognition](/docs/models/emotion-recognition) | 0 | 4 | 4 | [See all &rarr;](/docs/models/emotion-recognition) |
+| [Audio Codecs](/docs/models/audio-codecs) | 0 | 2 | 2 | [See all &rarr;](/docs/models/audio-codecs) |
+| [Forced Alignment](/docs/models/forced-alignment) | 0 | 2 | 2 | [See all &rarr;](/docs/models/forced-alignment) |
+
+### STT Highlights
+
+| Status | Model | WER (%) | Languages | License |
+|:---:|-------|---------|-----------|---------|
+| Available | faster-whisper-large-v3 | 7.4 | 100+ | MIT |
+| Available | distil-whisper-large-v3 | ~7.5 | English | MIT |
+| Planned | Canary-Qwen-2.5B | 5.63 | English | CC-BY-4.0 |
+| Planned | Parakeet-TDT-1.1B | ~8.0 | English | CC-BY-4.0 |
+| Planned | Qwen3-ASR-1.7B | — | 30+ | Apache-2.0 |
+
+[See all 33 STT models &rarr;](/docs/models/stt)
+
+### TTS Highlights
+
+| Status | Model | Parameters | Languages | License |
+|:---:|-------|-----------|-----------|---------|
+| Available | Kokoro-82M| 82M | 9 | Apache-2.0 |
+| Planned | Qwen3-TTS-12Hz-0.6B | 0.6B | 10 | Apache-2.0 |
+| Planned | parler-tts-mini-multilingual | 0.9B | 8 | Apache-2.0 |
+| Planned | CSM-1B | ~1B | English | Apache-2.0 |
+
+[See all 16 TTS models &rarr;](/docs/models/tts)
+
+### VAD & Turn Detection Highlights
+
+| Status | Model | Type | License |
+|:---:|-------|------|---------|
+| Available | Silero VAD | Energy + Neural VAD | MIT |
+| Planned | smart-turn-v2 | Semantic End-of-Turn | BSD-2-Clause |
+
+[See all 4 VAD models &rarr;](/docs/models/vad-turn-detection)
+
+## Quick Install
+
+```bash title="Install a model from the catalog"
+macaw pull faster-whisper-large-v3
+```
+
+```bash title="List installed models"
+macaw list
+```
+
+```bash title="Inspect model details"
+macaw inspect faster-whisper-large-v3
+```
+
+```bash title="Remove a model"
+macaw remove faster-whisper-large-v3
+```
+
+Models are downloaded from HuggingFace Hub and stored in `~/.macaw/models/` by default.
+
+## Engine Comparison
+
+### STT Engines
+
+| Feature | Faster-Whisper | WeNet |
+|---------|:-:|:-:|
+| Architecture | Encoder-decoder | CTC |
+| Streaming partials | Via LocalAgreement | Native |
+| Hot words | Via `initial_prompt` workaround | Native keyword boosting |
+| Cross-segment context | Yes (224 tokens) | No |
+| Language detection | Yes | No |
+| Translation | Yes (to English) | No |
+| Word timestamps | Yes | Yes |
+| Batch inference | Yes | Yes |
+| Best for | Accuracy, multilingual | Low latency, Chinese |
+
+### How Architecture Affects the Pipeline
+
+The `architecture` field in the model manifest tells the runtime how to adapt its streaming pipeline:
+
+| | Encoder-Decoder | CTC | Streaming-Native |
+|---|:-:|:-:|:-:|
+| **LocalAgreement** | Yes — confirms tokens across multiple inference passes | No | No |
+| **Cross-segment context** | Yes — 224 tokens from previous final as `initial_prompt` | No | No |
+| **Native partials** | No — runtime generates partials via LocalAgreement | Yes | Yes |
+| **Accumulation** | 5s chunks before inference | Frame-by-frame (160ms minimum) | Frame-by-frame |
+| **Example** | Faster-Whisper | WeNet | Paraformer (future) |
+
+
+<Callout type="info" title="Choosing a model">
+
+- **Best accuracy**: `faster-whisper-large-v3` — highest quality, 100+ languages
+- **Best speed/accuracy trade-off**: `faster-whisper-small` — runs on CPU, good quality
+- **Fastest startup**: `faster-whisper-tiny` — 256 MB, loads in ~2s
+- **English only, fast**: `distil-whisper-large-v3` — 6x faster than large-v3, ~1% WER gap
+- **Low-latency streaming**: WeNet (CTC) — frame-by-frame native partials
+- **Chinese focus**: WeNet — optimized for Chinese with native hot word support
+
+</Callout>
+
+
+## Model Manifest
+
+Every model has a `macaw.yaml` manifest that describes its capabilities, resource requirements, and engine configuration. See [Configuration](/docs/getting-started/configuration) for the full manifest format.
+
+```yaml title="Example: macaw.yaml"
+name: faster-whisper-large-v3
+version: "1.0.0"
+type: stt
+engine: faster-whisper
+
+capabilities:
+  architecture: encoder-decoder
+  streaming: true
+  languages: ["auto", "en", "pt", "es", "ja", "zh"]
+  word_timestamps: true
+  translation: true
+  partial_transcripts: true
+  hot_words: false
+  batch_inference: true
+  language_detection: true
+  initial_prompt: true
+
+resources:
+  memory_mb: 3072
+  gpu_required: false
+  gpu_recommended: true
+  load_time_seconds: 8
+
+engine_config:
+  model_size: "large-v3"
+  compute_type: "float16"
+  device: "auto"
+  beam_size: 5
+  vad_filter: false
+```
+
+## Dependencies
+
+Each engine has its own optional dependency group. Install only what you need:
+
+| Extra | Command | What It Installs |
+|-------|---------|-----------------|
+| `faster-whisper` | `pip install macaw-openvoice[faster-whisper]` | `faster-whisper>=1.1,<2.0` |
+| `wenet` | `pip install macaw-openvoice[wenet]` | `wenet>=2.0,<3.0` |
+| `kokoro` | `pip install macaw-openvoice[kokoro]` | `kokoro>=0.1,<1.0` |
+| `huggingface` | `pip install macaw-openvoice[huggingface]` | `huggingface_hub>=0.20,<1.0` |
+| `itn` | `pip install macaw-openvoice[itn]` | `nemo_text_processing>=1.1,<2.0` |
+
+```bash title="Install everything for a typical deployment"
+pip install macaw-openvoice[server,grpc,faster-whisper,kokoro,huggingface]
+```
+
+## Adding Your Own Engine
+
+Macaw is designed to make adding new engines straightforward — approximately 400-700 lines of code with zero changes to the runtime core. See the [Adding an Engine](/docs/guides/adding-engine) guide.

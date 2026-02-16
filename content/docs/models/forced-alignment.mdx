@@ -1,0 +1,23 @@
+---
+title: Forced Alignment Models
+---
+
+# Forced Alignment Models
+
+Forced alignment models take audio and its corresponding transcript, then predict precise timestamps for each word or phoneme. This is essential for subtitle generation, audio editing, pronunciation assessment, and synchronizing audio with text in production pipelines.
+
+## Models
+
+| Status | Model | Parameters | Languages | Hardware | License | HuggingFace |
+|:---:|-------|-----------|-----------|----------|---------|:---:|
+| Planned | Qwen3-ForcedAligner-0.6B | 0.6B | 11 (zh, en, yue, fr, de, it, ja, ko, pt, ru, es) | GPU recommended | Apache-2.0 | [Link](https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B) |
+| Planned | SoundChoice G2P | ~129M | English | CPU / GPU | Apache-2.0 | [Link](https://huggingface.co/speechbrain/soundchoice-g2p) |
+
+
+<Callout type="info" title="Choosing a model">
+
+- **Multilingual timestamp prediction**: **Qwen3-ForcedAligner-0.6B** supports 11 languages and can align audio segments up to ~5 minutes. Uses the same `qwen-asr` runtime as the Qwen3 ASR models.
+- **English phoneme conversion**: **SoundChoice G2P** (Grapheme-to-Phoneme) converts text to phoneme sequences, useful for TTS preprocessing and pronunciation dictionaries.
+
+</Callout>
+

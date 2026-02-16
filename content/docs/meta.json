@@ -1,0 +1,19 @@
+{
+  "title": "Docs",
+  "root": true,
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "getting-started",
+    "---Supported Models---",
+    "models",
+    "---Guides---",
+    "guides",
+    "---API Reference---",
+    "api-reference",
+    "---Architecture---",
+    "architecture",
+    "---Community---",
+    "community"
+  ]
+}

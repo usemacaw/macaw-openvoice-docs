@@ -1,0 +1,15 @@
+{
+  "title": "Supported Models",
+  "pages": [
+    "index",
+    "---Model Catalog---",
+    "stt",
+    "tts",
+    "voice-cloning",
+    "vad-turn-detection",
+    "speaker-diarization",
+    "emotion-recognition",
+    "audio-codecs",
+    "forced-alignment"
+  ]
+}

@@ -1,0 +1,23 @@
+---
+title: Audio Codec Models
+---
+
+# Audio Codec Models
+
+Audio codecs compress and decompress audio signals into compact token representations. In the context of voice AI, neural audio codecs are used as intermediate representations for TTS systems, voice conversion, and efficient audio streaming. They enable high-quality audio reconstruction from extremely compact representations.
+
+## Models
+
+| Status | Model | Sample Rate | Parameters | License | HuggingFace |
+|:---:|-------|------------|-----------|---------|:---:|
+| Planned | NVIDIA Audio Codec 44kHz | 44.1 kHz | — | — | [Link](https://huggingface.co/nvidia/audio-codec-44khz) |
+| Planned | NVIDIA Audio Codec 22kHz | 22.05 kHz | — | — | [Link](https://huggingface.co/nvidia/audio-codec-22khz) |
+
+
+<Callout type="info" title="Choosing a model">
+
+- **High-fidelity applications**: The **44kHz codec** preserves more audio detail and is suitable for music or high-quality voice synthesis.
+- **Voice-focused applications**: The **22kHz codec** is sufficient for speech and offers a more compact representation.
+
+</Callout>
+
