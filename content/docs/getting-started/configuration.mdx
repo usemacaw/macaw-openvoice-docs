@@ -133,16 +133,22 @@ ITN requires the `itn` extra: `pip install macaw-openvoice[itn]`. If not install
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|---|---|---|
-| `MACAW_MODELS_DIR` | Directory for model files | `~/.macaw/models` |
-| `MACAW_LOG_LEVEL` | Logging level | `INFO` |
-| `MACAW_STT_PORT` | gRPC port for STT worker | `50051` |
-| `MACAW_TTS_PORT` | gRPC port for TTS worker | `50052` |
+Macaw is configured entirely via `MACAW_*` environment variables -- 66 variables across 12 groups, all validated at startup.
+
+See the **[Environment Variables Reference](./environment-variables)** for the complete list with defaults, types, ranges, and deployment examples.
+
+```bash title="Minimal .env for production"
+MACAW_HOST=0.0.0.0
+MACAW_PORT=8000
+MACAW_MODELS_DIR=/opt/macaw/models
+MACAW_LOG_FORMAT=json
+MACAW_CORS_ORIGINS=https://app.example.com
+```
 
 ---
 
 ## Next Steps
 
+- **[Environment Variables](./environment-variables)** -- Complete reference for all `MACAW_*` variables
 - **[Architecture Overview](../architecture/overview)** -- Understand the runtime design
 - **[Adding an Engine](../guides/adding-engine)** -- Add custom STT or TTS engines
