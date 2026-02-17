@@ -1,0 +1,356 @@
+---
+title: Environment Variables
+---
+
+Complete reference for all `MACAW_*` environment variables. Every variable has a sensible default -- you only need to set the ones relevant to your deployment.
+
+All variables are validated at startup via [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/). Invalid values cause an immediate, descriptive error.
+
+---
+
+## Quick Start
+
+```bash title=".env"
+# Minimal production setup
+MACAW_HOST=0.0.0.0
+MACAW_PORT=8000
+MACAW_MODELS_DIR=/opt/macaw/models
+MACAW_LOG_FORMAT=json
+MACAW_LOG_LEVEL=INFO
+```
+
+<Callout type="info">
+
+Copy `.env.example` from the repository root to `.env` in your working directory. Macaw loads it automatically at startup.
+
+</Callout>
+
+---
+
+## Server
+
+HTTP server and WebSocket settings.
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_HOST` | `127.0.0.1` | string | -- | API server bind address |
+| `MACAW_PORT` | `8000` | int | 1--65535 | API server HTTP port |
+| `MACAW_MAX_FILE_SIZE_MB` | `25` | int | 1--500 | Maximum audio upload size in megabytes |
+| `MACAW_RETRY_AFTER_S` | `5` | string | -- | `Retry-After` header value for 503/502 responses |
+| `MACAW_CORS_ORIGINS` | _(empty)_ | string | -- | Comma-separated allowed CORS origins. Empty = no CORS |
+
+```bash title="CORS examples"
+# Development: allow everything
+MACAW_CORS_ORIGINS=*
+
+# Production: specific origins
+MACAW_CORS_ORIGINS=https://app.example.com,https://admin.example.com
+```
+
+<Callout type="warn">
+
+The CLI flag `--cors-origins` overrides `MACAW_CORS_ORIGINS`. If neither is set, CORS is disabled (no `Access-Control-Allow-Origin` header).
+
+</Callout>
+
+### WebSocket
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_MAX_WS_FRAME_SIZE_BYTES` | `1048576` | int | >= 1024 | Maximum binary frame size (1 MB default) |
+| `MACAW_WS_INACTIVITY_TIMEOUT_S` | `60.0` | float | > 0 | Close connection after this many idle seconds |
+| `MACAW_WS_HEARTBEAT_INTERVAL_S` | `10.0` | float | > 0 | Ping interval (must be < inactivity timeout) |
+| `MACAW_WS_CHECK_INTERVAL_S` | `5.0` | float | > 0 | Inactivity check interval |
+
+---
+
+## TTS (Text-to-Speech)
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_TTS_GRPC_TIMEOUT_S` | `60.0` | float | > 0 | Timeout for the gRPC Synthesize RPC |
+| `MACAW_TTS_LIST_VOICES_TIMEOUT_S` | `10.0` | float | > 0 | Timeout for the gRPC ListVoices RPC |
+| `MACAW_TTS_CHUNK_SIZE_BYTES` | `4096` | int | 512--65536 | Streaming audio chunk size. Smaller = lower TTFB, more overhead |
+| `MACAW_TTS_MAX_TEXT_LENGTH` | `4096` | int | 1--1000000 | Maximum input text length. Increase for audiobooks/long-form |
+
+---
+
+## Workers
+
+Worker subprocess settings for STT and TTS engines.
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_MODELS_DIR` | `~/.macaw/models` | string | -- | Model installation directory (supports `~`) |
+| `MACAW_WORKER_BASE_PORT` | `50051` | int | 1024--65535 | First gRPC port (STT). TTS uses base+1 |
+| `MACAW_WORKER_HOST` | `localhost` | string | -- | gRPC bind address. Change for Docker/K8s |
+| `MACAW_STT_WORKER_MAX_CONCURRENT` | `1` | int | 1--16 | Concurrent inference requests per STT worker |
+| `MACAW_STT_ACCUMULATION_THRESHOLD_S` | `5.0` | float | > 0, <= 30 | Streaming audio accumulation before inference |
+| `MACAW_STT_MAX_CANCELLED_REQUESTS` | `10000` | int | 100--1000000 | Bounded cache for cancelled request tracking |
+
+<Callout type="info">
+
+`MACAW_STT_ACCUMULATION_THRESHOLD_S` can be overridden per-model via `engine_config.accumulation_threshold_s` in the model's `macaw.yaml` manifest.
+
+</Callout>
+
+### Worker Lifecycle
+
+Controls crash recovery, health probing, and warmup.
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_WORKER_MAX_CRASHES` | `3` | int | 1--100 | Max crashes before giving up on a worker |
+| `MACAW_WORKER_CRASH_WINDOW_S` | `60.0` | float | > 0, <= 3600 | Time window for counting crashes |
+| `MACAW_WORKER_HEALTH_PROBE_INITIAL_DELAY_S` | `0.5` | float | > 0, <= 60 | First health probe delay after spawn |
+| `MACAW_WORKER_HEALTH_PROBE_MAX_DELAY_S` | `5.0` | float | > 0, <= 300 | Maximum backoff between health probes |
+| `MACAW_WORKER_HEALTH_PROBE_TIMEOUT_S` | `120.0` | float | > 0, <= 600 | Total timeout waiting for healthy worker |
+| `MACAW_WORKER_HEALTH_PROBE_RPC_TIMEOUT_S` | `2.0` | float | > 0, <= 30 | Timeout per individual health probe RPC |
+| `MACAW_WORKER_MONITOR_INTERVAL_S` | `1.0` | float | > 0, <= 60 | Process-alive check interval |
+| `MACAW_WORKER_STOP_GRACE_PERIOD_S` | `5.0` | float | > 0, <= 60 | Grace period before SIGKILL on stop |
+| `MACAW_WORKER_WARMUP_STEPS` | `3` | int | 0--20 | Warmup inference passes at startup. 0 = skip |
+
+<Callout type="info">
+
+Increase `MACAW_WORKER_HEALTH_PROBE_TIMEOUT_S` for large models (e.g., Whisper large-v3) that take longer to load into memory.
+
+</Callout>
+
+---
+
+## VAD (Voice Activity Detection)
+
+Controls the two-stage VAD pipeline: energy pre-filter (fast, CPU) followed by Silero neural classifier.
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_VAD_SENSITIVITY` | `normal` | string | `high`, `normal`, `low` | Sensitivity preset (case-insensitive) |
+| `MACAW_VAD_MIN_SPEECH_DURATION_MS` | `250` | int | 50--5000 | Minimum speech before SPEECH_START event |
+| `MACAW_VAD_MIN_SILENCE_DURATION_MS` | `300` | int | 50--5000 | Minimum silence before SPEECH_END event |
+| `MACAW_VAD_MAX_SPEECH_DURATION_MS` | `30000` | int | 1000--600000 | Maximum continuous speech before forced end |
+| `MACAW_VAD_ENERGY_THRESHOLD_DBFS` | _(unset)_ | float | -80 to 0 | Override energy pre-filter threshold (dBFS) |
+| `MACAW_VAD_SILERO_THRESHOLD` | _(unset)_ | float | 0.0--1.0 (exclusive) | Override Silero speech probability threshold |
+
+### Sensitivity Presets
+
+The `MACAW_VAD_SENSITIVITY` preset controls both the energy pre-filter and Silero thresholds together:
+
+| Preset | Energy Threshold | Silero Threshold | Use Case |
+|--------|-----------------|------------------|----------|
+| `high` | -50 dBFS | 0.3 | Whispers, quiet rooms, banking |
+| `normal` | -40 dBFS | 0.5 | Standard conversation |
+| `low` | -30 dBFS | 0.7 | Noisy environments, call centers |
+
+### Fine-Tuning Beyond Presets
+
+Use the override variables to decouple individual thresholds from the preset:
+
+```bash title="Custom: sensitive energy + strict Silero"
+MACAW_VAD_SENSITIVITY=normal
+MACAW_VAD_ENERGY_THRESHOLD_DBFS=-45.0
+MACAW_VAD_SILERO_THRESHOLD=0.6
+```
+
+When set, override variables take precedence over the sensitivity preset for their respective stage.
+
+---
+
+## Session (Streaming STT)
+
+Controls the streaming session state machine, ring buffer, backpressure, and cross-segment context.
+
+### Timeouts
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_SESSION_INIT_TIMEOUT_S` | `30.0` | float | 1--600 | Timeout waiting for first audio in INIT state |
+| `MACAW_SESSION_SILENCE_TIMEOUT_S` | `30.0` | float | 1--600 | Silence duration before transitioning to HOLD |
+| `MACAW_SESSION_HOLD_TIMEOUT_S` | `300.0` | float | 1--3600 | Time in HOLD before closing. Increase for long pauses |
+| `MACAW_SESSION_CLOSING_TIMEOUT_S` | `2.0` | float | 1--60 | Timeout for flushing pending transcripts |
+
+### Ring Buffer & Recovery
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_SESSION_RING_BUFFER_DURATION_S` | `60.0` | float | > 0, <= 600 | Audio retention for crash recovery |
+| `MACAW_SESSION_RING_BUFFER_FORCE_COMMIT_THRESHOLD` | `0.90` | float | 0.5--1.0 | Buffer fullness that triggers forced commit |
+| `MACAW_SESSION_RECOVERY_TIMEOUT_S` | `10.0` | float | > 0, <= 120 | Timeout for WAL-based recovery after crash |
+| `MACAW_SESSION_DRAIN_STREAM_TIMEOUT_S` | `5.0` | float | > 0, <= 60 | Timeout for draining final transcripts |
+| `MACAW_SESSION_FLUSH_AND_CLOSE_TIMEOUT_S` | `2.0` | float | > 0, <= 30 | Timeout for the final flush-and-close |
+
+### Backpressure
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_SESSION_BACKPRESSURE_MAX_BACKLOG_S` | `10.0` | float | > 0, <= 120 | Maximum audio backlog before dropping frames |
+| `MACAW_SESSION_BACKPRESSURE_RATE_LIMIT_THRESHOLD` | `1.2` | float | > 1.0, <= 5.0 | Rate multiplier before rate-limiting kicks in |
+
+### Cross-Segment Context
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_SESSION_CROSS_SEGMENT_MAX_TOKENS` | `224` | int | 1--2048 | Token window for cross-segment conditioning |
+
+<Callout type="info">
+
+224 tokens = half of Whisper's 448-token context window. Increase for larger models. Only affects encoder-decoder engines (Whisper). CTC engines ignore cross-segment context.
+
+</Callout>
+
+---
+
+## Scheduler
+
+Controls request prioritization, batching, timeouts, and cancellation.
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_SCHEDULER_MIN_GRPC_TIMEOUT_S` | `30.0` | float | > 0, <= 600 | Minimum gRPC timeout regardless of audio length |
+| `MACAW_SCHEDULER_TIMEOUT_FACTOR` | `2.0` | float | > 0, <= 10 | Multiplier: `timeout = max(min, duration * factor)` |
+| `MACAW_SCHEDULER_SHUTDOWN_TIMEOUT_S` | `10.0` | float | > 0, <= 120 | Grace period for draining in-flight requests |
+| `MACAW_SCHEDULER_AGING_THRESHOLD_S` | `30.0` | float | > 0, <= 300 | Time before BATCH is promoted to REALTIME priority |
+| `MACAW_SCHEDULER_BATCH_ACCUMULATE_MS` | `50.0` | float | > 0, <= 5000 | Window to accumulate requests into a batch |
+| `MACAW_SCHEDULER_BATCH_MAX_SIZE` | `8` | int | 1--64 | Maximum requests per batch |
+| `MACAW_SCHEDULER_NO_WORKER_BACKOFF_S` | `0.1` | float | > 0, <= 10 | Backoff when no worker is available |
+| `MACAW_SCHEDULER_DEQUEUE_POLL_INTERVAL_S` | `0.5` | float | > 0, <= 10 | Priority queue polling interval |
+| `MACAW_SCHEDULER_LATENCY_CLEANUP_INTERVAL_S` | `30.0` | float | > 0, <= 600 | Interval for cleaning expired latency entries |
+| `MACAW_SCHEDULER_LATENCY_TTL_S` | `60.0` | float | > 0, <= 600 | TTL for latency tracker entries |
+| `MACAW_SCHEDULER_CANCEL_PROPAGATION_TIMEOUT_S` | `0.1` | float | > 0, <= 10 | Timeout for cancel propagation to workers |
+
+<Callout type="info">
+
+Streaming WebSocket requests bypass the scheduler entirely -- they use a direct gRPC streaming connection for minimum latency. These settings only affect batch (REST API) requests.
+
+</Callout>
+
+---
+
+## gRPC
+
+Message size limits for the internal runtime-to-worker gRPC protocol.
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_GRPC_MAX_BATCH_MESSAGE_MB` | `30` | int | 1--500 | Max message size for batch requests |
+| `MACAW_GRPC_MAX_STREAMING_MESSAGE_MB` | `10` | int | 1--100 | Max message size for streaming frames |
+
+<Callout type="warn">
+
+`MACAW_GRPC_MAX_BATCH_MESSAGE_MB` must be >= `MACAW_MAX_FILE_SIZE_MB` to accept the largest uploads.
+
+</Callout>
+
+---
+
+## Preprocessing
+
+Audio preprocessing pipeline (runs before VAD and engine).
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_PREPROCESSING_DC_CUTOFF_HZ` | `20` | int | 1--500 | High-pass filter cutoff. 20 Hz for full-band, 80+ Hz for telephony |
+| `MACAW_PREPROCESSING_TARGET_DBFS` | `-3.0` | float | -60 to 0 | Gain normalization target. -3.0 dBFS = industry standard headroom |
+
+---
+
+## Post-Processing
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_ITN_LANGUAGE` | `pt` | string | -- | Language for Inverse Text Normalization (NeMo) |
+
+---
+
+## CLI
+
+Settings for the `macaw` command-line client.
+
+| Variable | Default | Type | Range | Description |
+|----------|---------|------|-------|-------------|
+| `MACAW_SERVER_URL` | `http://localhost:8000` | string | -- | Target server URL |
+| `MACAW_HTTP_TIMEOUT_S` | `120.0` | float | > 0 | HTTP request timeout for all CLI commands |
+
+---
+
+## Logging
+
+<Callout type="warn">
+
+Logging variables are read directly by `macaw.logging` at import time, **before** pydantic-settings is initialized. They are NOT part of `MacawSettings`.
+
+</Callout>
+
+| Variable | Default | Type | Options | Description |
+|----------|---------|------|---------|-------------|
+| `MACAW_LOG_FORMAT` | `console` | string | `console`, `json` | Log output format |
+| `MACAW_LOG_LEVEL` | `INFO` | string | `DEBUG`, `INFO`, `WARNING`, `ERROR` | Log verbosity |
+
+```bash title="Production logging"
+MACAW_LOG_FORMAT=json
+MACAW_LOG_LEVEL=WARNING
+```
+
+---
+
+## Docker / Kubernetes
+
+Example configuration for containerized deployments:
+
+```yaml title="docker-compose.yml (excerpt)"
+services:
+  macaw:
+    image: macaw-openvoice:latest
+    environment:
+      MACAW_HOST: "0.0.0.0"
+      MACAW_PORT: "8000"
+      MACAW_MODELS_DIR: "/models"
+      MACAW_WORKER_HOST: "0.0.0.0"
+      MACAW_LOG_FORMAT: "json"
+      MACAW_LOG_LEVEL: "INFO"
+      MACAW_CORS_ORIGINS: "https://app.example.com"
+      MACAW_WORKER_HEALTH_PROBE_TIMEOUT_S: "180"
+      MACAW_VAD_SENSITIVITY: "normal"
+    volumes:
+      - ./models:/models
+    ports:
+      - "8000:8000"
+```
+
+```yaml title="Kubernetes ConfigMap"
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: macaw-config
+data:
+  MACAW_HOST: "0.0.0.0"
+  MACAW_PORT: "8000"
+  MACAW_MODELS_DIR: "/models"
+  MACAW_WORKER_HOST: "0.0.0.0"
+  MACAW_LOG_FORMAT: "json"
+  MACAW_CORS_ORIGINS: "https://app.example.com"
+  MACAW_VAD_SENSITIVITY: "high"
+  MACAW_SESSION_SILENCE_TIMEOUT_S: "60"
+```
+
+---
+
+## Validation Rules
+
+Macaw validates all environment variables at startup. Cross-field constraints:
+
+| Constraint | Rule |
+|------------|------|
+| Heartbeat < Inactivity | `MACAW_WS_HEARTBEAT_INTERVAL_S` must be less than `MACAW_WS_INACTIVITY_TIMEOUT_S` |
+| Health probe delays | `MACAW_WORKER_HEALTH_PROBE_INITIAL_DELAY_S` must be less than `MACAW_WORKER_HEALTH_PROBE_MAX_DELAY_S` |
+| Speech duration | `MACAW_VAD_MIN_SPEECH_DURATION_MS` must be less than `MACAW_VAD_MAX_SPEECH_DURATION_MS` |
+| gRPC vs upload | `MACAW_GRPC_MAX_BATCH_MESSAGE_MB` should be >= `MACAW_MAX_FILE_SIZE_MB` |
+
+If validation fails, Macaw prints the exact field and constraint that was violated and exits immediately.
+
+---
+
+## Reference
+
+- **Source of truth:** [`macaw/config/settings.py`](https://github.com/usemacaw/macaw-openvoice/blob/main/macaw/config/settings.py)
+- **Example file:** [`.env.example`](https://github.com/usemacaw/macaw-openvoice/blob/main/.env.example)
+- **Configuration guide:** [Configuration](./configuration)

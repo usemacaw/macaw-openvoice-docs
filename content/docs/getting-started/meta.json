@@ -1,4 +1,4 @@
 {
   "title": "Getting Started",
-  "pages": ["installation", "quickstart", "configuration"]
+  "pages": ["installation", "quickstart", "configuration", "environment-variables"]
 }

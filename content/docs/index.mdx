@@ -15,7 +15,7 @@ Macaw OpenVoice is an open-source **voice runtime** real-time Speech-to-Text and
 | **OpenAI-Compatible API** | `POST /v1/audio/transcriptions`, `/translations`, `/speech` -- existing SDKs work out of the box |
 | **Real-Time Streaming** | Partial and final transcripts via WebSocket with sub-300ms TTFB |
 | **Full-Duplex** | Simultaneous STT + TTS on a single WebSocket with mute-on-speak safety |
-| **Multi-Engine** | Faster-Whisper (encoder-decoder), WeNet (CTC), Kokoro (TTS) through one interface |
+| **Multi-Engine** | Faster-Whisper (encoder-decoder), Kokoro (TTS) through one interface |
 | **Session Manager** | 6-state machine, ring buffer, WAL-based crash recovery, backpressure control |
 | **Voice Activity Detection** | Silero VAD with energy pre-filter and configurable sensitivity levels |
 | **Audio Preprocessing** | Automatic resample, DC removal, and gain normalization to 16 kHz |
@@ -31,7 +31,6 @@ Macaw OpenVoice is an open-source **voice runtime** real-time Speech-to-Text and
 | Engine | Type | Architecture | Streaming | Hot Words |
 |---|---|---|---|---|
 | [Faster-Whisper](https://github.com/SYSTRAN/faster-whisper) | STT | Encoder-Decoder | LocalAgreement | via `initial_prompt` |
-| [WeNet](https://github.com/wenet-e2e/wenet) | STT | CTC | Native partials | Native keyword boosting |
 | [Kokoro](https://github.com/hexgrad/kokoro) | TTS | Neural | Chunked streaming | -- |
 
 
@@ -66,7 +65,7 @@ Adding a new STT or TTS engine requires approximately 400-700 lines of code and 
            +------------+  +------------+
            | Faster-    |  | Kokoro     |
            | Whisper    |  +------------+
-           | WeNet      |
+           |       |
            +------------+
 ```
 
