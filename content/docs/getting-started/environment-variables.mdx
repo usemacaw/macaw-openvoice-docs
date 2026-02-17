@@ -59,7 +59,7 @@ The CLI flag `--cors-origins` overrides `MACAW_CORS_ORIGINS`. If neither is set,
 |----------|---------|------|-------|-------------|
 | `MACAW_MAX_WS_FRAME_SIZE_BYTES` | `1048576` | int | >= 1024 | Maximum binary frame size (1 MB default) |
 | `MACAW_WS_INACTIVITY_TIMEOUT_S` | `60.0` | float | > 0 | Close connection after this many idle seconds |
-| `MACAW_WS_HEARTBEAT_INTERVAL_S` | `10.0` | float | > 0 | Ping interval (must be less than inactivity timeout) |
+| `MACAW_WS_HEARTBEAT_INTERVAL_S` | `10.0` | float | > 0 | Ping interval (must be < inactivity timeout) |
 | `MACAW_WS_CHECK_INTERVAL_S` | `5.0` | float | > 0 | Inactivity check interval |
 
 ---
@@ -340,7 +340,7 @@ Macaw validates all environment variables at startup. Cross-field constraints:
 
 | Constraint | Rule |
 |------------|------|
-| Heartbeat ≤ Inactivity | `MACAW_WS_HEARTBEAT_INTERVAL_S` must be less than `MACAW_WS_INACTIVITY_TIMEOUT_S` |
+| Heartbeat < Inactivity | `MACAW_WS_HEARTBEAT_INTERVAL_S` must be less than `MACAW_WS_INACTIVITY_TIMEOUT_S` |
 | Health probe delays | `MACAW_WORKER_HEALTH_PROBE_INITIAL_DELAY_S` must be less than `MACAW_WORKER_HEALTH_PROBE_MAX_DELAY_S` |
 | Speech duration | `MACAW_VAD_MIN_SPEECH_DURATION_MS` must be less than `MACAW_VAD_MAX_SPEECH_DURATION_MS` |
 | gRPC vs upload | `MACAW_GRPC_MAX_BATCH_MESSAGE_MB` should be >= `MACAW_MAX_FILE_SIZE_MB` |

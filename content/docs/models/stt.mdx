@@ -40,6 +40,7 @@ Macaw supports a growing catalog of speech-to-text models spanning multiple arch
 | Planned | whisper-small.en | 244M | — | — | No | English | CPU / GPU | MIT | [Link](https://huggingface.co/openai/whisper-small.en) |
 | Planned | whisper-tiny.en | 39M | — | — | No | English | CPU / GPU | MIT | [Link](https://huggingface.co/openai/whisper-tiny.en) |
 | Planned | whisper-base.en | 74M | — | — | No | English | CPU / GPU | MIT | [Link](https://huggingface.co/openai/whisper-base.en) |
+| Planned | LFM2.5-Audio-1.5B | 1.5B | 7.53 ^2^ | — | No | English | CPU (GGUF) / GPU | LFM Open v1.0 | [Link](https://huggingface.co/LiquidAI/LFM2.5-Audio-1.5B) |
 
 
 <Callout type="info" title="Choosing a model">
@@ -64,6 +65,9 @@ Macaw supports a growing catalog of speech-to-text models spanning multiple arch
 
 **Real-time streaming:**
 - **Voxtral-Mini-4B** — Native streaming with &lt;500ms latency (requires vLLM)
+
+**End-to-end audio (interleaved):**
+- **LFM2.5-Audio-1.5B** — Single model for ASR+TTS+voice chat. Sub-100ms end-to-end latency. CPU-friendly via GGUF (English only).
 
 </Callout>
 
