@@ -20,10 +20,10 @@ Macaw OpenVoice has completed all 9 milestones of the initial Product Requiremen
 
 ## Current State
 
-- **1,600+ tests** passing (unit + integration)
+- **2,000+ tests** passing (unit + integration)
 - **3 STT architectures** supported: encoder-decoder, CTC, streaming-native
 - **2 STT engines**: Faster-Whisper, WeNet
-- **1 TTS engine**: Kokoro (9 languages)
+- **2 TTS engines**: Kokoro (9 languages), Qwen3-TTS (10 languages)
 - **Full-duplex** voice interactions on a single WebSocket
 - **OpenAI-compatible** REST API
 - **Ollama-style** CLI
@@ -40,6 +40,8 @@ The following areas are under consideration for future development. These are no
 | Piper TTS | Lightweight TTS alternative for CPU-only deployments |
 | Whisper.cpp | GGML-based inference without Python/CUDA dependency |
 | Multi-model serving | Load multiple models per worker type |
+| LFM2.5-Audio-1.5B | End-to-end interleaved audio/text model — single 1.5B model replaces separate ASR+TTS pipeline. CPU inference via GGUF. English only for now |
+| `interleaved` architecture | New pipeline mode for models that natively produce audio+text without separate STT/TTS stages |
 
 ### Scalability
 

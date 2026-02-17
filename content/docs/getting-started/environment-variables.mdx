@@ -59,7 +59,7 @@ The CLI flag `--cors-origins` overrides `MACAW_CORS_ORIGINS`. If neither is set,
 |----------|---------|------|-------|-------------|
 | `MACAW_MAX_WS_FRAME_SIZE_BYTES` | `1048576` | int | >= 1024 | Maximum binary frame size (1 MB default) |
 | `MACAW_WS_INACTIVITY_TIMEOUT_S` | `60.0` | float | > 0 | Close connection after this many idle seconds |
-| `MACAW_WS_HEARTBEAT_INTERVAL_S` | `10.0` | float | > 0 | Ping interval (must be less than inactivity timeout) |
+| `MACAW_WS_HEARTBEAT_INTERVAL_S` | `10.0` | float | > 0 | Ping interval (must be < inactivity timeout) |
 | `MACAW_WS_CHECK_INTERVAL_S` | `5.0` | float | > 0 | Inactivity check interval |
 
 ---
@@ -85,7 +85,7 @@ Worker subprocess settings for STT and TTS engines.
 | `MACAW_WORKER_BASE_PORT` | `50051` | int | 1024--65535 | First gRPC port (STT). TTS uses base+1 |
 | `MACAW_WORKER_HOST` | `localhost` | string | -- | gRPC bind address. Change for Docker/K8s |
 | `MACAW_STT_WORKER_MAX_CONCURRENT` | `1` | int | 1--16 | Concurrent inference requests per STT worker |
-| `MACAW_STT_ACCUMULATION_THRESHOLD_S` | `5.0` | float | > 0, ≤ 30 | Streaming audio accumulation before inference |
+| `MACAW_STT_ACCUMULATION_THRESHOLD_S` | `5.0` | float | > 0, <= 30 | Streaming audio accumulation before inference |
 | `MACAW_STT_MAX_CANCELLED_REQUESTS` | `10000` | int | 100--1000000 | Bounded cache for cancelled request tracking |
 
 <Callout type="info">
@@ -101,13 +101,13 @@ Controls crash recovery, health probing, and warmup.
 | Variable | Default | Type | Range | Description |
 |----------|---------|------|-------|-------------|
 | `MACAW_WORKER_MAX_CRASHES` | `3` | int | 1--100 | Max crashes before giving up on a worker |
-| `MACAW_WORKER_CRASH_WINDOW_S` | `60.0` | float | > 0, ≤ 3600 | Time window for counting crashes |
-| `MACAW_WORKER_HEALTH_PROBE_INITIAL_DELAY_S` | `0.5` | float | > 0, ≤ 60 | First health probe delay after spawn |
-| `MACAW_WORKER_HEALTH_PROBE_MAX_DELAY_S` | `5.0` | float | > 0, ≤ 300 | Maximum backoff between health probes |
-| `MACAW_WORKER_HEALTH_PROBE_TIMEOUT_S` | `120.0` | float | > 0, ≤ 600 | Total timeout waiting for healthy worker |
-| `MACAW_WORKER_HEALTH_PROBE_RPC_TIMEOUT_S` | `2.0` | float | > 0, ≤ 30 | Timeout per individual health probe RPC |
-| `MACAW_WORKER_MONITOR_INTERVAL_S` | `1.0` | float | > 0, ≤ 60 | Process-alive check interval |
-| `MACAW_WORKER_STOP_GRACE_PERIOD_S` | `5.0` | float | > 0, ≤ 60 | Grace period before SIGKILL on stop |
+| `MACAW_WORKER_CRASH_WINDOW_S` | `60.0` | float | > 0, <= 3600 | Time window for counting crashes |
+| `MACAW_WORKER_HEALTH_PROBE_INITIAL_DELAY_S` | `0.5` | float | > 0, <= 60 | First health probe delay after spawn |
+| `MACAW_WORKER_HEALTH_PROBE_MAX_DELAY_S` | `5.0` | float | > 0, <= 300 | Maximum backoff between health probes |
+| `MACAW_WORKER_HEALTH_PROBE_TIMEOUT_S` | `120.0` | float | > 0, <= 600 | Total timeout waiting for healthy worker |
+| `MACAW_WORKER_HEALTH_PROBE_RPC_TIMEOUT_S` | `2.0` | float | > 0, <= 30 | Timeout per individual health probe RPC |
+| `MACAW_WORKER_MONITOR_INTERVAL_S` | `1.0` | float | > 0, <= 60 | Process-alive check interval |
+| `MACAW_WORKER_STOP_GRACE_PERIOD_S` | `5.0` | float | > 0, <= 60 | Grace period before SIGKILL on stop |
 | `MACAW_WORKER_WARMUP_STEPS` | `3` | int | 0--20 | Warmup inference passes at startup. 0 = skip |
 
 <Callout type="info">
@@ -172,18 +172,18 @@ Controls the streaming session state machine, ring buffer, backpressure, and cro
 
 | Variable | Default | Type | Range | Description |
 |----------|---------|------|-------|-------------|
-| `MACAW_SESSION_RING_BUFFER_DURATION_S` | `60.0` | float | > 0, ≤ 600 | Audio retention for crash recovery |
+| `MACAW_SESSION_RING_BUFFER_DURATION_S` | `60.0` | float | > 0, <= 600 | Audio retention for crash recovery |
 | `MACAW_SESSION_RING_BUFFER_FORCE_COMMIT_THRESHOLD` | `0.90` | float | 0.5--1.0 | Buffer fullness that triggers forced commit |
-| `MACAW_SESSION_RECOVERY_TIMEOUT_S` | `10.0` | float | > 0, ≤ 120 | Timeout for WAL-based recovery after crash |
-| `MACAW_SESSION_DRAIN_STREAM_TIMEOUT_S` | `5.0` | float | > 0, ≤ 60 | Timeout for draining final transcripts |
-| `MACAW_SESSION_FLUSH_AND_CLOSE_TIMEOUT_S` | `2.0` | float | > 0, ≤ 30 | Timeout for the final flush-and-close |
+| `MACAW_SESSION_RECOVERY_TIMEOUT_S` | `10.0` | float | > 0, <= 120 | Timeout for WAL-based recovery after crash |
+| `MACAW_SESSION_DRAIN_STREAM_TIMEOUT_S` | `5.0` | float | > 0, <= 60 | Timeout for draining final transcripts |
+| `MACAW_SESSION_FLUSH_AND_CLOSE_TIMEOUT_S` | `2.0` | float | > 0, <= 30 | Timeout for the final flush-and-close |
 
 ### Backpressure
 
 | Variable | Default | Type | Range | Description |
 |----------|---------|------|-------|-------------|
-| `MACAW_SESSION_BACKPRESSURE_MAX_BACKLOG_S` | `10.0` | float | > 0, ≤ 120 | Maximum audio backlog before dropping frames |
-| `MACAW_SESSION_BACKPRESSURE_RATE_LIMIT_THRESHOLD` | `1.2` | float | > 1.0, ≤ 5.0 | Rate multiplier before rate-limiting kicks in |
+| `MACAW_SESSION_BACKPRESSURE_MAX_BACKLOG_S` | `10.0` | float | > 0, <= 120 | Maximum audio backlog before dropping frames |
+| `MACAW_SESSION_BACKPRESSURE_RATE_LIMIT_THRESHOLD` | `1.2` | float | > 1.0, <= 5.0 | Rate multiplier before rate-limiting kicks in |
 
 ### Cross-Segment Context
 
@@ -205,17 +205,17 @@ Controls request prioritization, batching, timeouts, and cancellation.
 
 | Variable | Default | Type | Range | Description |
 |----------|---------|------|-------|-------------|
-| `MACAW_SCHEDULER_MIN_GRPC_TIMEOUT_S` | `30.0` | float | > 0, ≤ 600 | Minimum gRPC timeout regardless of audio length |
-| `MACAW_SCHEDULER_TIMEOUT_FACTOR` | `2.0` | float | > 0, ≤ 10 | Multiplier: `timeout = max(min, duration * factor)` |
-| `MACAW_SCHEDULER_SHUTDOWN_TIMEOUT_S` | `10.0` | float | > 0, ≤ 120 | Grace period for draining in-flight requests |
-| `MACAW_SCHEDULER_AGING_THRESHOLD_S` | `30.0` | float | > 0, ≤ 300 | Time before BATCH is promoted to REALTIME priority |
-| `MACAW_SCHEDULER_BATCH_ACCUMULATE_MS` | `50.0` | float | > 0, ≤ 5000 | Window to accumulate requests into a batch |
+| `MACAW_SCHEDULER_MIN_GRPC_TIMEOUT_S` | `30.0` | float | > 0, <= 600 | Minimum gRPC timeout regardless of audio length |
+| `MACAW_SCHEDULER_TIMEOUT_FACTOR` | `2.0` | float | > 0, <= 10 | Multiplier: `timeout = max(min, duration * factor)` |
+| `MACAW_SCHEDULER_SHUTDOWN_TIMEOUT_S` | `10.0` | float | > 0, <= 120 | Grace period for draining in-flight requests |
+| `MACAW_SCHEDULER_AGING_THRESHOLD_S` | `30.0` | float | > 0, <= 300 | Time before BATCH is promoted to REALTIME priority |
+| `MACAW_SCHEDULER_BATCH_ACCUMULATE_MS` | `50.0` | float | > 0, <= 5000 | Window to accumulate requests into a batch |
 | `MACAW_SCHEDULER_BATCH_MAX_SIZE` | `8` | int | 1--64 | Maximum requests per batch |
-| `MACAW_SCHEDULER_NO_WORKER_BACKOFF_S` | `0.1` | float | > 0, ≤ 10 | Backoff when no worker is available |
-| `MACAW_SCHEDULER_DEQUEUE_POLL_INTERVAL_S` | `0.5` | float | > 0, ≤ 10 | Priority queue polling interval |
-| `MACAW_SCHEDULER_LATENCY_CLEANUP_INTERVAL_S` | `30.0` | float | > 0, ≤ 600 | Interval for cleaning expired latency entries |
-| `MACAW_SCHEDULER_LATENCY_TTL_S` | `60.0` | float | > 0, ≤ 600 | TTL for latency tracker entries |
-| `MACAW_SCHEDULER_CANCEL_PROPAGATION_TIMEOUT_S` | `0.1` | float | > 0, ≤ 10 | Timeout for cancel propagation to workers |
+| `MACAW_SCHEDULER_NO_WORKER_BACKOFF_S` | `0.1` | float | > 0, <= 10 | Backoff when no worker is available |
+| `MACAW_SCHEDULER_DEQUEUE_POLL_INTERVAL_S` | `0.5` | float | > 0, <= 10 | Priority queue polling interval |
+| `MACAW_SCHEDULER_LATENCY_CLEANUP_INTERVAL_S` | `30.0` | float | > 0, <= 600 | Interval for cleaning expired latency entries |
+| `MACAW_SCHEDULER_LATENCY_TTL_S` | `60.0` | float | > 0, <= 600 | TTL for latency tracker entries |
+| `MACAW_SCHEDULER_CANCEL_PROPAGATION_TIMEOUT_S` | `0.1` | float | > 0, <= 10 | Timeout for cancel propagation to workers |
 
 <Callout type="info">
 
@@ -340,7 +340,7 @@ Macaw validates all environment variables at startup. Cross-field constraints:
 
 | Constraint | Rule |
 |------------|------|
-| Heartbeat ≤ Inactivity | `MACAW_WS_HEARTBEAT_INTERVAL_S` must be less than `MACAW_WS_INACTIVITY_TIMEOUT_S` |
+| Heartbeat < Inactivity | `MACAW_WS_HEARTBEAT_INTERVAL_S` must be less than `MACAW_WS_INACTIVITY_TIMEOUT_S` |
 | Health probe delays | `MACAW_WORKER_HEALTH_PROBE_INITIAL_DELAY_S` must be less than `MACAW_WORKER_HEALTH_PROBE_MAX_DELAY_S` |
 | Speech duration | `MACAW_VAD_MIN_SPEECH_DURATION_MS` must be less than `MACAW_VAD_MAX_SPEECH_DURATION_MS` |
 | gRPC vs upload | `MACAW_GRPC_MAX_BATCH_MESSAGE_MB` should be >= `MACAW_MAX_FILE_SIZE_MB` |
