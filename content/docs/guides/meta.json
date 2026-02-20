@@ -1,6 +1,7 @@
 {
   "title": "Guides",
   "pages": [
+    "api-examples",
     "batch-transcription",
     "streaming-stt",
     "full-duplex",

@@ -1,0 +1,824 @@
+---
+title: API Examples
+---
+
+Complete request/response examples for every Macaw OpenVoice endpoint. All outputs shown here are **real responses** captured from a running instance with `faster-whisper-tiny` (STT) and `kokoro-v1` (TTS).
+
+<Callout type="info" title="Base URL">
+
+All examples assume the server is running at `http://localhost:8000`. Adjust the URL if your setup differs.
+
+</Callout>
+
+
+## Health & System
+
+### GET /health
+
+```bash title="curl"
+curl http://localhost:8000/health
+```
+
+```json title="Response"
+{
+  "status": "ok",
+  "version": "0.1.7",
+  "models_loaded": 2,
+  "workers_ready": 2,
+  "workers_total": 2
+}
+```
+
+### GET /v1/models
+
+```bash title="curl"
+curl http://localhost:8000/v1/models
+```
+
+```json title="Response"
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "faster-whisper-tiny",
+      "object": "model",
+      "owned_by": "macaw",
+      "created": 0,
+      "type": "stt",
+      "engine": "faster-whisper"
+    },
+    {
+      "id": "kokoro-v1",
+      "object": "model",
+      "owned_by": "macaw",
+      "created": 0,
+      "type": "tts",
+      "engine": "kokoro"
+    }
+  ]
+}
+```
+
+---
+
+## Audio Transcription
+
+### JSON format (default)
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/transcriptions \
+  -F file=@audio.wav \
+  -F model=faster-whisper-tiny \
+  -F response_format=json
+```
+
+```python title="Python"
+import httpx
+
+with open("audio.wav", "rb") as f:
+    r = httpx.post(
+        "http://localhost:8000/v1/audio/transcriptions",
+        files={"file": ("audio.wav", f, "audio/wav")},
+        data={"model": "faster-whisper-tiny", "response_format": "json"},
+        timeout=120,
+    )
+print(r.json())
+```
+
+```json title="Response"
+{
+  "text": "Hello world, this is a test of the Macaw voice system."
+}
+```
+
+### Verbose JSON format
+
+Includes segments with timestamps, language detection, and duration:
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/transcriptions \
+  -F file=@audio.wav \
+  -F model=faster-whisper-tiny \
+  -F response_format=verbose_json
+```
+
+```json title="Response"
+{
+  "text": "Hello world, this is a test of the Macaw voice system.",
+  "segments": [
+    {
+      "id": 0,
+      "start": 0.0,
+      "end": 4.0,
+      "text": "Hello world, this is a test of the Macaw voice system."
+    }
+  ],
+  "language": "en",
+  "duration": 3.9
+}
+```
+
+### Text format
+
+Returns plain text without JSON wrapping:
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/transcriptions \
+  -F file=@audio.wav \
+  -F model=faster-whisper-tiny \
+  -F response_format=text
+```
+
+```text title="Response"
+Hello world, this is a test of the Macaw voice system.
+```
+
+### SRT subtitle format
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/transcriptions \
+  -F file=@audio.wav \
+  -F model=faster-whisper-tiny \
+  -F response_format=srt
+```
+
+```text title="Response"
+1
+00:00:00,000 --> 00:00:04,000
+Hello world, this is a test of the Macaw voice system.
+```
+
+### VTT subtitle format
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/transcriptions \
+  -F file=@audio.wav \
+  -F model=faster-whisper-tiny \
+  -F response_format=vtt
+```
+
+```text title="Response"
+WEBVTT
+
+00:00:00.000 --> 00:00:04.000
+Hello world, this is a test of the Macaw voice system.
+```
+
+### With explicit language
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/transcriptions \
+  -F file=@audio.wav \
+  -F model=faster-whisper-tiny \
+  -F language=en \
+  -F response_format=verbose_json
+```
+
+```json title="Response"
+{
+  "language": "en",
+  "duration": 3.9,
+  "text": "Hello world, this is a test of the Macaw voice system."
+}
+```
+
+### Word-level timestamps
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/transcriptions \
+  -F file=@audio.wav \
+  -F model=faster-whisper-tiny \
+  -F response_format=verbose_json \
+  -F "timestamp_granularities[]=word"
+```
+
+```json title="Response — words array"
+[
+  {"word": "Hello", "start": 0.0, "end": 0.64},
+  {"word": "world,", "start": 0.64, "end": 1.06},
+  {"word": "this", "start": 1.46, "end": 1.66},
+  {"word": "is", "start": 1.66, "end": 1.86},
+  {"word": "a", "start": 1.86, "end": 1.98}
+]
+```
+
+---
+
+## Audio Translation
+
+Translates audio from any supported language to English:
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/translations \
+  -F file=@audio.wav \
+  -F model=faster-whisper-tiny
+```
+
+```json title="Response"
+{
+  "text": "Hello world, this is a test of the Macaw voice system."
+}
+```
+
+<Callout type="info" title="Translation target">
+
+Translation always outputs English text, regardless of the source language. This matches the OpenAI API behavior.
+
+</Callout>
+
+
+---
+
+## Speech Synthesis
+
+### WAV format (default)
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "Hello world", "voice": "default"}' \
+  --output speech.wav
+```
+
+```python title="Python"
+import httpx
+
+r = httpx.post(
+    "http://localhost:8000/v1/audio/speech",
+    json={"model": "kokoro-v1", "input": "Hello world", "voice": "default"},
+    timeout=120,
+)
+assert r.content[:4] == b"RIFF"  # WAV header
+with open("speech.wav", "wb") as f:
+    f.write(r.content)
+```
+
+```text title="Response"
+Content-Type: audio/wav
+Body: 73,244 bytes (WAV file with RIFF header)
+```
+
+### PCM format
+
+Raw PCM 16-bit audio without WAV headers:
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "Hello world", "response_format": "pcm"}' \
+  --output speech.pcm
+```
+
+```text title="Response"
+Content-Type: audio/pcm
+Body: 73,200 bytes (raw PCM 16-bit, 24kHz, mono)
+```
+
+<Callout type="info" title="WAV vs PCM size">
+
+The 44-byte difference between WAV (73,244) and PCM (73,200) is exactly the WAV file header.
+
+</Callout>
+
+
+### Speed control
+
+```bash title="curl — 2x speed"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "Testing speed control", "speed": 2.0}' \
+  --output fast.wav
+```
+
+```text title="Response comparison"
+Speed 1.0x: 90,044 bytes
+Speed 2.0x: 45,644 bytes  (~50% size, as expected)
+```
+
+### Audio effects — pitch shift
+
+Shift the pitch up or down by semitones:
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "Pitch shift test",
+       "effects": {"pitch_shift_semitones": 3.0}}' \
+  --output pitched.wav
+```
+
+```text title="Response"
+Status: 200
+Body: 82,844 bytes (WAV)
+```
+
+### Audio effects — reverb
+
+Add room reverb to the generated speech:
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "Reverb test",
+       "effects": {"reverb_room_size": 0.7, "reverb_damping": 0.5,
+                   "reverb_wet_dry_mix": 0.3}}' \
+  --output reverb.wav
+```
+
+```text title="Response"
+Status: 200
+Body: 85,244 bytes (WAV)
+```
+
+### Audio effects — combined
+
+Pitch shift and reverb can be applied together:
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "Combined effects",
+       "effects": {"pitch_shift_semitones": -2.0,
+                   "reverb_room_size": 0.5, "reverb_wet_dry_mix": 0.2}}' \
+  --output combined.wav
+```
+
+```text title="Response"
+Status: 200
+Body: 81,644 bytes (WAV)
+```
+
+### Word-level alignment (NDJSON)
+
+When `include_alignment` is enabled, the response switches from binary audio to NDJSON streaming — each line contains base64-encoded audio with per-word timing:
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "Hello world",
+       "include_alignment": true, "alignment_granularity": "word"}'
+```
+
+```json title="Response — NDJSON lines (content-type: application/x-ndjson)"
+{"type": "audio", "audio": "<base64>", "alignment": {"items": [{"text": "Hello", "start_ms": 350, "duration_ms": 275}, {"text": "world", "start_ms": 625, "duration_ms": 625}], "granularity": "word"}}
+{"type": "audio", "audio": "<base64>"}
+{"type": "done", "duration": 1.525}
+```
+
+<Callout type="info" title="Alignment data">
+
+Alignment is attached to the **first audio chunk** of each synthesis segment. Subsequent chunks carry audio only. The `done` line provides the total audio duration.
+
+</Callout>
+
+
+### Character-level alignment
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "Hi",
+       "include_alignment": true, "alignment_granularity": "character"}'
+```
+
+```json title="Response — alignment items"
+{
+  "items": [
+    {"text": "H", "start_ms": 375, "duration_ms": 262},
+    {"text": "i", "start_ms": 637, "duration_ms": 263}
+  ],
+  "granularity": "character"
+}
+```
+
+### Seed parameter
+
+For reproducible output with non-deterministic engines (e.g., Qwen3-TTS):
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "Reproducibility test", "seed": 42}' \
+  --output seeded.wav
+```
+
+```text title="Response"
+Status: 200
+Body: 98,444 bytes (WAV)
+```
+
+<Callout type="info" title="Deterministic engines">
+
+Kokoro is a deterministic engine — `seed` is accepted but has no effect. Seed is meaningful for non-deterministic engines like Qwen3-TTS where it controls `torch.manual_seed()` before generation.
+
+</Callout>
+
+
+### Text normalization
+
+Controls whether the engine normalizes text (e.g., numbers to words):
+
+```bash title="curl — normalization off"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "I have 3 cats.",
+       "text_normalization": "off"}' \
+  --output normalized.wav
+```
+
+```text title="Response for each mode"
+auto: 86,444 bytes
+on:   86,444 bytes
+off:  86,444 bytes
+```
+
+---
+
+## Voice Management
+
+### List preset voices
+
+```bash title="curl"
+curl http://localhost:8000/v1/voices
+```
+
+```python title="Python"
+import httpx
+
+r = httpx.get("http://localhost:8000/v1/voices", timeout=30)
+data = r.json()
+print(f"Total voices: {len(data['data'])}")
+for v in data["data"][:5]:
+    print(f"  {v['voice_id']}: {v['name']} ({v.get('language')})")
+```
+
+```json title="Response (first 5 of 54)"
+{
+  "object": "list",
+  "data": [
+    {"voice_id": "af_alloy", "name": "af_alloy", "language": "en"},
+    {"voice_id": "af_aoede", "name": "af_aoede", "language": "en"},
+    {"voice_id": "af_bella", "name": "af_bella", "language": "en"},
+    {"voice_id": "af_heart", "name": "af_heart", "language": "en"},
+    {"voice_id": "af_jessica", "name": "af_jessica", "language": "en"}
+  ]
+}
+```
+
+### Create a saved voice
+
+<Callout type="info" title="Requires VoiceStore">
+
+Voice CRUD requires starting the server with `--voice-dir` or setting the `MACAW_VOICE_DIR` environment variable.
+
+</Callout>
+
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/voices \
+  -F name=test-voice \
+  -F voice_type=designed \
+  -F "instruction=A calm and warm English voice" \
+  -F language=en
+```
+
+```python title="Python"
+import httpx
+
+r = httpx.post(
+    "http://localhost:8000/v1/voices",
+    data={
+        "name": "test-voice",
+        "voice_type": "designed",
+        "instruction": "A calm and warm English voice",
+        "language": "en",
+    },
+    timeout=30,
+)
+voice_id = r.json()["voice_id"]
+print(f"Created: {voice_id}")
+```
+
+```json title="Response — 201 Created"
+{
+  "voice_id": "333742fe-336a-4858-8b67-f1fced51d0d1",
+  "name": "test-voice",
+  "voice_type": "designed",
+  "instruction": "A calm and warm English voice",
+  "language": "en",
+  "created_at": 1740076801.0
+}
+```
+
+### Get a saved voice
+
+```bash title="curl"
+curl http://localhost:8000/v1/voices/333742fe-336a-4858-8b67-f1fced51d0d1
+```
+
+```json title="Response — 200 OK"
+{
+  "voice_id": "333742fe-336a-4858-8b67-f1fced51d0d1",
+  "name": "test-voice",
+  "voice_type": "designed",
+  "instruction": "A calm and warm English voice",
+  "language": "en",
+  "created_at": 1740076801.0
+}
+```
+
+### Use a saved voice in synthesis
+
+Reference saved voices with the `voice_` prefix:
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "Saved voice test",
+       "voice": "voice_333742fe-336a-4858-8b67-f1fced51d0d1"}' \
+  --output saved_voice.wav
+```
+
+```text title="Response"
+Status: 200
+Body: 88,844 bytes (WAV)
+```
+
+### Delete a saved voice
+
+```bash title="curl"
+curl -X DELETE http://localhost:8000/v1/voices/333742fe-336a-4858-8b67-f1fced51d0d1
+```
+
+```text title="Response — 204 No Content"
+(empty body)
+```
+
+Confirming deletion:
+
+```bash title="curl — verify deleted"
+curl http://localhost:8000/v1/voices/333742fe-336a-4858-8b67-f1fced51d0d1
+```
+
+```json title="Response — 404 Not Found"
+{
+  "error": {
+    "message": "Voice '333742fe-336a-4858-8b67-f1fced51d0d1' not found",
+    "type": "voice_not_found"
+  }
+}
+```
+
+---
+
+## WebSocket Realtime
+
+The WebSocket endpoint at `/v1/realtime` supports bidirectional STT streaming and TTS full-duplex in a single connection.
+
+### STT streaming
+
+```python title="Python"
+import asyncio, json, websockets
+
+async def stream_stt():
+    ws_url = "ws://localhost:8000/v1/realtime?model=faster-whisper-tiny"
+    async with websockets.connect(ws_url) as ws:
+        # 1. Receive session.created
+        msg = json.loads(await ws.recv())
+        assert msg["type"] == "session.created"
+        print(f"Session: {msg['session_id']}")
+
+        # 2. Send PCM audio frames (16kHz, 16-bit, mono)
+        with open("audio.wav", "rb") as f:
+            pcm = f.read()[44:]  # skip WAV header
+        for i in range(0, len(pcm), 3200):
+            await ws.send(pcm[i:i+3200])
+            await asyncio.sleep(0.05)
+
+        # 3. Force commit
+        await ws.send(json.dumps({"type": "input_audio_buffer.commit"}))
+
+        # 4. Receive transcript events
+        while True:
+            raw = await asyncio.wait_for(ws.recv(), timeout=15)
+            if isinstance(raw, str):
+                ev = json.loads(raw)
+                print(f"  {ev['type']}")
+                if ev["type"] == "transcript.final":
+                    print(f"  Text: {ev['text']}")
+                    break
+
+        await ws.send(json.dumps({"type": "session.close"}))
+
+asyncio.run(stream_stt())
+```
+
+```text title="Output"
+Session: sess_fa87d9875e6e
+  vad.speech_start
+  transcript.final
+  Text: Hello world, this is a test.
+```
+
+### Session configuration
+
+```python title="Python"
+await ws.send(json.dumps({
+    "type": "session.configure",
+    "language": "en",
+    "enable_partial_transcripts": True,
+    "vad_sensitivity": "high",
+}))
+```
+
+### TTS via WebSocket
+
+```python title="Python"
+import asyncio, json, websockets
+
+async def stream_tts():
+    ws_url = "ws://localhost:8000/v1/realtime?model=faster-whisper-tiny"
+    async with websockets.connect(ws_url) as ws:
+        json.loads(await ws.recv())  # session.created
+
+        # Configure TTS model
+        await ws.send(json.dumps({
+            "type": "session.configure", "model_tts": "kokoro-v1"
+        }))
+
+        # Speak
+        await ws.send(json.dumps({
+            "type": "tts.speak",
+            "text": "Hello from WebSocket",
+            "request_id": "test_tts_1",
+        }))
+
+        # Receive events + binary audio frames
+        events, audio_frames = [], []
+        while True:
+            raw = await asyncio.wait_for(ws.recv(), timeout=30)
+            if isinstance(raw, bytes):
+                audio_frames.append(raw)
+            else:
+                ev = json.loads(raw)
+                events.append(ev)
+                print(f"  {ev['type']}")
+                if ev["type"] == "tts.speaking_end":
+                    break
+
+        total = sum(len(f) for f in audio_frames)
+        print(f"Audio: {len(audio_frames)} frames, {total:,} bytes")
+        await ws.send(json.dumps({"type": "session.close"}))
+
+asyncio.run(stream_tts())
+```
+
+```text title="Output"
+  tts.speaking_start
+  tts.speaking_end
+Audio: 23 frames, 91,200 bytes
+```
+
+<Callout type="info" title="Binary frame direction">
+
+In the WebSocket protocol, binary frames **server-to-client** are always TTS audio. Binary frames **client-to-server** are always STT audio. No ambiguity.
+
+</Callout>
+
+
+### TTS with word alignment
+
+```python title="Python"
+await ws.send(json.dumps({
+    "type": "tts.speak",
+    "text": "Alignment test",
+    "include_alignment": True,
+    "request_id": "align",
+}))
+```
+
+```json title="tts.alignment event (received before audio frame)"
+{
+  "type": "tts.alignment",
+  "items": [
+    {"text": "Alignment", "start_ms": 350, "duration_ms": 425},
+    {"text": "test", "start_ms": 775, "duration_ms": 575}
+  ]
+}
+```
+
+### TTS cancel
+
+Cancel an in-progress synthesis:
+
+```python title="Python"
+# Start speaking
+await ws.send(json.dumps({
+    "type": "tts.speak",
+    "text": "This long sentence should be cancelled before finishing.",
+    "request_id": "cancel_test",
+}))
+
+# Wait for tts.speaking_start, then cancel
+# ...receive tts.speaking_start...
+await ws.send(json.dumps({"type": "tts.cancel"}))
+
+# Receive tts.speaking_end with cancelled flag
+# ...receive tts.speaking_end...
+```
+
+```json title="tts.speaking_end event"
+{
+  "type": "tts.speaking_end",
+  "request_id": "cancel_test",
+  "cancelled": true
+}
+```
+
+---
+
+## Error Handling
+
+All error responses follow the OpenAI error format:
+
+### Empty text (422)
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": ""}'
+```
+
+```text title="Response"
+Status: 422 (Pydantic validation — input min_length=1)
+```
+
+### Non-existent model (404)
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "nonexistent", "input": "test"}'
+```
+
+```json title="Response"
+{
+  "error": {
+    "message": "Model 'nonexistent' not found",
+    "type": "model_not_found"
+  }
+}
+```
+
+### Non-existent voice (404)
+
+```bash title="curl"
+curl http://localhost:8000/v1/voices/nonexistent
+```
+
+```json title="Response"
+{
+  "error": {
+    "message": "Voice 'nonexistent' not found",
+    "type": "voice_not_found"
+  }
+}
+```
+
+### Invalid audio format (400)
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/transcriptions \
+  -F "file=@bad.txt;type=text/plain" \
+  -F model=faster-whisper-tiny
+```
+
+```text title="Response"
+Status: 400 (unsupported content type)
+```
+
+### Alignment + Opus conflict (400)
+
+```bash title="curl"
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro-v1", "input": "test",
+       "include_alignment": true, "response_format": "opus"}'
+```
+
+```text title="Response"
+Status: 400 (alignment requires raw audio, not codec-encoded)
+```
+
+---
+
+## Error Response Summary
+
+| Status | Scenario | Description |
+|:------:|----------|-------------|
+| 400 | Bad request | Invalid audio format, missing fields, conflicting options |
+| 404 | Not found | Model or voice does not exist |
+| 422 | Validation | Pydantic field validation (empty text, out-of-range values) |
+| 502 | Worker crash | gRPC worker process died mid-request |
+| 503 | Unavailable | No workers ready for the requested model |
+| 504 | Timeout | Worker did not respond within gRPC deadline |
